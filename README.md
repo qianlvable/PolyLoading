@@ -1,5 +1,5 @@
 # PolyLoading
-A simple poly loading animation for android
+A simple poly loading animation for android.Inspire by this awesome demo http://tympanus.net/Tutorials/SpringLoaders/
 
 exmaples:
 
