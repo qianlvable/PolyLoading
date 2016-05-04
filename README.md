@@ -49,9 +49,9 @@ loadingView.startLoading();
 
 `depth` specifies the count of inscribed polygon inside. *Default: 4*
 
-`tension` specifies the tensiton of the spring animation. (http://facebook.github.io/rebound/) *Default: 20*
+`tension` specifies the tensiton of the spring animation. (See more on http://facebook.github.io/rebound/) *Default: 20*
 
-`friction` specifies the friction of the spring animation . (see more on http://facebook.github.io/rebound/ )*Default: 6*
+`friction` specifies the friction of the spring animation . (See more on http://facebook.github.io/rebound/ )*Default: 6*
 
 ## Copyright Notice ##
 ``` 
