@@ -23,33 +23,33 @@ import java.util.List;
  * Created by ningjiaqi on 16/4/21.
  */
 public class PolyLoadingView extends View {
-    private Paint mPaint;
-    private int slide = 3;
-    private int depth = 4;
-    private int cx;
-    private int cy;
-    private List<PointF> mPoints;
+
+    private int mEdgeCount = 3;
+    private int mDepth = 4;
+    private int mCx;
+    private int mCy;
     private float mProgress;
-    private Path mPath;
-
-    private int mShapeColor = 0xff02C39A;
-    private boolean mEnableAlpha = true;
-
-    private int mAlpha;
     private float mResetAt = 1f;
-
-    private Spring mSpring;
-    float toLow = 0;
-    float toHigh = mResetAt;
+    private float mToLow = 0;
+    private float mToHigh = mResetAt;
     private int mTensition = 20;
     private int mFriction = 6;
 
+    private Paint mPaint;
+    private Path mPath;
+    private int mShapeColor = 0xff02C39A;
+    private boolean mEnableAlpha = true;
+    private int mAlpha;
+    private boolean mFilled;
+    private int mStrokeWidth = 5;
+
+    private Spring mSpring;
     private SimpleSpringListener mUpdateListener;
-    private boolean mFilled = true;
 
     private boolean mBufferCompleted;
     private List<List<List<PointF>>> mFrameBuffer;
     private int mFrameIndex = 0;
+    private List<PointF> mPoints;
 
 
     public PolyLoadingView(Context context) {
@@ -64,8 +64,8 @@ public class PolyLoadingView extends View {
                 R.styleable.PolyLoadingView,
                 0, 0);
         try {
-            slide = a.getInt(R.styleable.PolyLoadingView_slide,6);
-            depth = a.getInt(R.styleable.PolyLoadingView_depth,3);
+            mEdgeCount = a.getInt(R.styleable.PolyLoadingView_edgeCount,6);
+            mDepth = a.getInt(R.styleable.PolyLoadingView_depth,3);
             mFilled = a.getBoolean(R.styleable.PolyLoadingView_filled,false);
             mEnableAlpha = a.getBoolean(R.styleable.PolyLoadingView_enableAlpha,false);
             mShapeColor = a.getColor(R.styleable.PolyLoadingView_shapeColor,0xff02C39A);
@@ -86,11 +86,9 @@ public class PolyLoadingView extends View {
             mPaint.setStyle(Paint.Style.STROKE);
         }
 
-        mPaint.setStrokeWidth(5);
+        mPaint.setStrokeWidth(mStrokeWidth);
         mPaint.setColor(mShapeColor);
 
-        // 什么时候需要调用这个api
-      //  setLayerType(LAYER_TYPE_SOFTWARE, mPaint);
         mPath = new Path();
         mPoints = new ArrayList<>();
         mFrameBuffer = new ArrayList<>();
@@ -98,7 +96,7 @@ public class PolyLoadingView extends View {
         SpringSystem springSystem = SpringSystem.create();
         mSpring = springSystem.createSpring();
         mSpring.setSpringConfig(new SpringConfig(mTensition, mFriction));
-        mAlpha = 255 / depth;
+        mAlpha = 255 / mDepth;
         mUpdateListener = new SimpleSpringListener(){
             @Override
             public void onSpringUpdate(Spring spring) {
@@ -116,7 +114,7 @@ public class PolyLoadingView extends View {
                 }
 
                 mProgress = (float) SpringUtil.mapValueFromRangeToRange(curVal
-                        ,1,0,toLow,toHigh);
+                        ,1,0, mToLow, mToHigh);
                 invalidate();
             }
         };
@@ -124,23 +122,23 @@ public class PolyLoadingView extends View {
     }
 
     private void changeMapRange() {
-        if (toLow == mResetAt) {
-            toLow = 0;
-            toHigh = mResetAt;
+        if (mToLow == mResetAt) {
+            mToLow = 0;
+            mToHigh = mResetAt;
         } else {
-            toLow = mResetAt;
-            toHigh = 1;
+            mToLow = mResetAt;
+            mToHigh = 1;
         }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (cx == 0) {
-            cx = getWidth() / 2;
-            cy = getHeight() / 2;
-            canvas.rotate(180, cx, cy);
+        if (mCx == 0) {
+            mCx = getWidth() / 2;
+            mCy = getHeight() / 2;
+            canvas.rotate(180, mCx, mCy);
             float radius = getWidth() / 2.8f;
-            mPoints = getRegularPoints(cx, cy, slide, radius);
+            mPoints = getRegularPoints(mCx, mCy, mEdgeCount, radius);
         }
 
         List<List<PointF>> children;
@@ -186,7 +184,7 @@ public class PolyLoadingView extends View {
 
     private List<List<PointF>> getCurrentShape(float progress){
         List<List<PointF>> result = new ArrayList<>();
-        for (int i =0;i < depth;i++) {
+        for (int i = 0; i < mDepth; i++) {
             List<PointF> pre;
             if (i == 0)
                 pre = mPoints;
@@ -219,36 +217,50 @@ public class PolyLoadingView extends View {
         mSpring.removeAllListeners();
     }
 
+    /**
+     * @param enable enable alpha effect for child polygons */
     public void enableAlphaEffect(boolean enable){
         mEnableAlpha = enable;
         discardCache();
     }
-
+    /**
+     * @param shapeColor set polygon main color
+     * */
     public void setShapeColor(int shapeColor) {
         this.mShapeColor = shapeColor;
         mPaint.setColor(shapeColor);
         discardCache();
     }
 
-    public void setSlide(int slide) {
-        if (slide > 2) {
-            this.slide = slide;
+    /**
+     * @param mEdgeCount set edge count for polygon
+     * */
+    public void setEdgeCount(int mEdgeCount) {
+        if (mEdgeCount > 2) {
+            this.mEdgeCount = mEdgeCount;
             discardCache();
         }
     }
 
+    /**
+     * @param enable filled style or stroke style
+     * */
     public void setFill(boolean enable){
         mFilled = enable;
     }
 
+    /**
+     * @param radius rounded corner radius for polygon*/
     public void setRoundCorner(float radius){
         mPaint.setPathEffect(new CornerPathEffect(radius));
     }
 
-    public void setDepth(int depth) {
-        this.depth = depth;
+    /**
+     * @param mDepth the count of inscribed polygon inside*/
+    public void setDepth(int mDepth) {
+        this.mDepth = mDepth;
 
-        mAlpha = 255 / depth;
+        mAlpha = 255 / mDepth;
         discardCache();
     }
 
@@ -262,6 +274,9 @@ public class PolyLoadingView extends View {
         mSpring.removeAllListeners();
     }
 
+    /**
+     * @param resize decide the spin range before  resize,range from 0 ~ 1
+     * */
     public void setResizePercent(float resize){
         if (resize< 0 || resize > 1) {
             resize = 1;
@@ -272,8 +287,7 @@ public class PolyLoadingView extends View {
         }
     }
 
-
-    public List<PointF> getRegularPoints(int cx,int cy,int slide , float radius) {
+    private List<PointF> getRegularPoints(int cx,int cy,int slide , float radius) {
         List<PointF> pts = new ArrayList<>();
         for (int i = 0;i < slide;i++) {
             float x = (float) (radius * Math.sin(i * 2 * Math.PI / slide));
@@ -285,7 +299,7 @@ public class PolyLoadingView extends View {
         return pts;
     }
 
-    public List<PointF> getInscribedPoints(List<PointF> pts, float progress) {
+    private List<PointF> getInscribedPoints(List<PointF> pts, float progress) {
         List<PointF> inscribedPoints = new ArrayList<>();
 
         for (int i=0;i<pts.size();i++){
@@ -298,8 +312,6 @@ public class PolyLoadingView extends View {
         }
         return inscribedPoints;
     }
-
-
 
     private PointF getInterpolatedPoint(PointF start, PointF end, float progress) {
         float dx = end.x - start.x;

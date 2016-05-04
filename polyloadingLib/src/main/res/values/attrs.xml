@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="PolyLoadingView">
-        <attr name="slide" format="integer"/>
+        <attr name="edgeCount" format="integer"/>
         <attr name="shapeColor" format="color"/>
         <attr name="enableAlpha" format="boolean"/>
         <attr name="filled" format="boolean"/>

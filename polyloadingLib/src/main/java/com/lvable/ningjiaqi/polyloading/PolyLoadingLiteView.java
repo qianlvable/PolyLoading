@@ -2,6 +2,7 @@ package com.lvable.ningjiaqi.polyloading;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.CornerPathEffect;
 import android.graphics.Paint;
@@ -19,22 +20,23 @@ import java.util.List;
  * Created by ningjiaqi on 16/4/21.
  */
 public class PolyLoadingLiteView extends View {
+    private boolean mFilled;
     private Paint mPaint;
-    private int slide = 3;
-    private int depth = 3;
-    private int cx;
-    private int cy;
-    private List<PointF> mPoints;
-    private float mProgress;
     private Path mPath;
-    private List<List<PointF>> mChildren;
-
     private ValueAnimator mProgressAnimator;
+
+    private int mEdgeCount = 3;
+    private int mDepth = 3;
+    private int mCx;
+    private int mCy;
+    private float mProgress;
     private int mShapeColor = 0xff554433;
     private int mDuration;
     private boolean mEnableAlpha;
-
     private int mAlpha;
+
+    private List<PointF> mPoints;
+    private List<List<PointF>> mChildren;
 
     public PolyLoadingLiteView(Context context) {
         super(context);
@@ -43,29 +45,38 @@ public class PolyLoadingLiteView extends View {
 
     public PolyLoadingLiteView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        TypedArray a = context.getTheme().obtainStyledAttributes(
+                attrs,
+                R.styleable.PolyLoadingView,
+                0, 0);
+        try {
+            mEdgeCount = a.getInt(R.styleable.PolyLoadingView_edgeCount,6);
+            mDepth = a.getInt(R.styleable.PolyLoadingView_depth,3);
+            mFilled = a.getBoolean(R.styleable.PolyLoadingView_filled,false);
+            mEnableAlpha = a.getBoolean(R.styleable.PolyLoadingView_enableAlpha,false);
+            mShapeColor = a.getColor(R.styleable.PolyLoadingView_shapeColor,0xff02C39A);
+        } finally {
+            a.recycle();
+        }
         init();
     }
 
-    public PolyLoadingLiteView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init();
-    }
 
     private void init() {
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mPaint.setStyle(Paint.Style.STROKE);
-
+        if (mFilled){
+            mPaint.setStyle(Paint.Style.FILL);
+        }else {
+            mPaint.setStyle(Paint.Style.STROKE);
+        }
         mPaint.setStrokeWidth(9);
         mPaint.setColor(mShapeColor);
 
-        // 什么时候需要调用这个api
-        //  setLayerType(LAYER_TYPE_SOFTWARE, mPaint);
         mPath = new Path();
-
         mPoints = new ArrayList<>();
         mChildren = new ArrayList<>();
 
-        mAlpha = 255 / depth;
+        mAlpha = 255 / mDepth;
 
         mDuration = 1200;
         mProgressAnimator = new ValueAnimator().ofFloat(1,0f).setDuration(mDuration);
@@ -83,12 +94,12 @@ public class PolyLoadingLiteView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (cx == 0) {
-            cx = getWidth() / 2;
-            cy = getHeight() / 2;
-            canvas.rotate(180, cx, cy);
+        if (mCx == 0) {
+            mCx = getWidth() / 2;
+            mCy = getHeight() / 2;
+            canvas.rotate(180, mCx, mCy);
             float radius = getWidth() / 2.8f;
-            mPoints = getRegularPoints(cx, cy, slide, radius);
+            mPoints = getRegularPoints(mCx, mCy, mEdgeCount, radius);
         }
 
         List<List<PointF>> children = getCurrentShape(mProgress);
@@ -105,6 +116,9 @@ public class PolyLoadingLiteView extends View {
         }
     }
 
+    /**
+     * @param filled set filled or stroke for poly
+     * */
     public void setFill(boolean filled){
         if (filled){
             mPaint.setStyle(Paint.Style.FILL);
@@ -112,7 +126,9 @@ public class PolyLoadingLiteView extends View {
             mPaint.setStyle(Paint.Style.STROKE);
         }
     }
-
+    /**
+     * @param radius set round corner for polygon`s edge
+     * */
     public void setRoundRadius(float radius){
         mPaint.setPathEffect(new CornerPathEffect(radius));
     }
@@ -125,6 +141,9 @@ public class PolyLoadingLiteView extends View {
         mProgressAnimator.end();
     }
 
+    /**
+     * @param enable enable alpha effect for child polygons
+     * */
     public void enableAlphaEffect(boolean enable){
         mEnableAlpha = enable;
     }
@@ -141,20 +160,28 @@ public class PolyLoadingLiteView extends View {
         mProgressAnimator.setInterpolator(intepetor);
     }
 
+    /**
+     * @param millisecond set animation duration for one cycle
+     * */
     public void setDuration(int millisecond) {
         mDuration = millisecond;
         mProgressAnimator.setDuration(mDuration);
 
     }
-
+    /**
+     * @param shapeColor set the main color of the polygon
+     * */
     public void setShapeColor(int shapeColor) {
         this.mShapeColor = shapeColor;
         mPaint.setColor(shapeColor);
     }
 
-    public void setSlide(int slide) {
-        if (slide > 2) {
-            this.slide = slide;
+    /**
+     * @param edgeCount set edge count of the polygon
+     * */
+    public void setEdgeCount(int edgeCount) {
+        if (mEdgeCount > 2) {
+            this.mEdgeCount = edgeCount;
             invalidate();
         }
     }
@@ -173,7 +200,6 @@ public class PolyLoadingLiteView extends View {
 
     private List<PointF> getInscribedPoints(List<PointF> pts, float progress) {
         List<PointF> inscribedPoints = new ArrayList<>();
-
         for (int i=0;i<pts.size();i++){
             PointF start = pts.get(i);
             PointF end;
@@ -211,7 +237,7 @@ public class PolyLoadingLiteView extends View {
 
     private List<List<PointF>> getCurrentShape(float progress){
         mChildren.clear();
-        for (int i =0;i < depth;i++) {
+        for (int i = 0; i < mDepth; i++) {
             List<PointF> pre;
             if (i == 0)
                 pre = mPoints;
