@@ -16,7 +16,7 @@ PolyLoadingView.java need Facebook Rebound library as dependency,and with some c
 PolyLoadingLiteView.java does not require Rebound! But do not have cache feature.
 
 ##Quick start
-If you do not want spring rebound feature , just copy the PolyLoadingView.java and attrs.xml files to your project will do the job.Or you can include the PolyLoadingLib as Android library.
+If you do not want spring rebound feature , just copy the PolyLoadingView.java and attrs.xml files to your project will do the job.Or you can include the PolyLoadingLib as Android library module.
 ### Jcenter gradle dependency coming soon
 
 ### Use it in your layout file ###
