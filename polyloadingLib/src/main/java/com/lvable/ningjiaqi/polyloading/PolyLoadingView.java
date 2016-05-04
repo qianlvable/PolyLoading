@@ -1,23 +1,18 @@
 package com.lvable.ningjiaqi.polyloading;
 
-import android.animation.Animator;
-import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.CornerPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
-import android.view.animation.Interpolator;
 
 import com.facebook.rebound.SimpleSpringListener;
 import com.facebook.rebound.Spring;
 import com.facebook.rebound.SpringConfig;
-import com.facebook.rebound.SpringListener;
 import com.facebook.rebound.SpringSystem;
 import com.facebook.rebound.SpringUtil;
 
@@ -36,9 +31,8 @@ public class PolyLoadingView extends View {
     private List<PointF> mPoints;
     private float mProgress;
     private Path mPath;
-    private List<List<PointF>> mChildren;
 
-    private int mShapeColor;
+    private int mShapeColor = 0xff02C39A;
     private boolean mEnableAlpha = true;
 
     private int mAlpha;
@@ -53,7 +47,6 @@ public class PolyLoadingView extends View {
     private SimpleSpringListener mUpdateListener;
     private boolean mFilled = true;
 
-
     private boolean mBufferCompleted;
     private List<List<List<PointF>>> mFrameBuffer;
     private int mFrameIndex = 0;
@@ -66,18 +59,32 @@ public class PolyLoadingView extends View {
 
     public PolyLoadingView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        TypedArray a = context.getTheme().obtainStyledAttributes(
+                attrs,
+                R.styleable.PolyLoadingView,
+                0, 0);
+        try {
+            slide = a.getInt(R.styleable.PolyLoadingView_slide,6);
+            depth = a.getInt(R.styleable.PolyLoadingView_depth,3);
+            mFilled = a.getBoolean(R.styleable.PolyLoadingView_filled,false);
+            mEnableAlpha = a.getBoolean(R.styleable.PolyLoadingView_enableAlpha,false);
+            mShapeColor = a.getColor(R.styleable.PolyLoadingView_shapeColor,0xff02C39A);
+            mTensition = a.getInt(R.styleable.PolyLoadingView_tensition,20);
+            mFriction = a.getInt(R.styleable.PolyLoadingView_friction,6);
+        } finally {
+            a.recycle();
+        }
         init();
     }
 
-    public PolyLoadingView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init();
-    }
 
     private void init() {
-        mShapeColor = 0xff02C39A;
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        if (mFilled) {
+            mPaint.setStyle(Paint.Style.FILL);
+        }else {
+            mPaint.setStyle(Paint.Style.STROKE);
+        }
 
         mPaint.setStrokeWidth(5);
         mPaint.setColor(mShapeColor);
@@ -86,7 +93,6 @@ public class PolyLoadingView extends View {
       //  setLayerType(LAYER_TYPE_SOFTWARE, mPaint);
         mPath = new Path();
         mPoints = new ArrayList<>();
-        mChildren = new ArrayList<>();
         mFrameBuffer = new ArrayList<>();
 
         SpringSystem springSystem = SpringSystem.create();
@@ -109,10 +115,8 @@ public class PolyLoadingView extends View {
                     mBufferCompleted = true;
                 }
 
-
-
                 mProgress = (float) SpringUtil.mapValueFromRangeToRange(curVal
-                        ,0,1,toLow,toHigh);
+                        ,1,0,toLow,toHigh);
                 invalidate();
             }
         };
@@ -136,7 +140,7 @@ public class PolyLoadingView extends View {
             cy = getHeight() / 2;
             canvas.rotate(180, cx, cy);
             float radius = getWidth() / 2.8f;
-            mPoints = ShapeUtil.getRegularPoints(cx, cy, slide, radius);
+            mPoints = getRegularPoints(cx, cy, slide, radius);
         }
 
         List<List<PointF>> children;
@@ -180,7 +184,7 @@ public class PolyLoadingView extends View {
         mPath.close();
     }
 
-    public List<List<PointF>> getCurrentShape(float progress){
+    private List<List<PointF>> getCurrentShape(float progress){
         List<List<PointF>> result = new ArrayList<>();
         for (int i =0;i < depth;i++) {
             List<PointF> pre;
@@ -189,16 +193,21 @@ public class PolyLoadingView extends View {
             else
                 pre = result.get(i-1);
 
-            List<PointF> child = ShapeUtil.getInscribedPoints(pre,progress);
+            List<PointF> child = getInscribedPoints(pre,progress);
             result.add(child);
         }
         return result;
     }
 
+    private void discardCache(){
+        mFrameIndex = 0;
+        mBufferCompleted = false;
+        mFrameBuffer.clear();
+    }
+
     public void startLoading(){
         mSpring.setEndValue(1);
         mSpring.addListener(mUpdateListener);
-
     }
 
     public boolean isRunning(){
@@ -212,20 +221,19 @@ public class PolyLoadingView extends View {
 
     public void enableAlphaEffect(boolean enable){
         mEnableAlpha = enable;
-    }
-
-    public void setReverse(boolean backward) {
-        // TODO: 16/4/25 need to implement
+        discardCache();
     }
 
     public void setShapeColor(int shapeColor) {
         this.mShapeColor = shapeColor;
         mPaint.setColor(shapeColor);
+        discardCache();
     }
 
     public void setSlide(int slide) {
         if (slide > 2) {
             this.slide = slide;
+            discardCache();
         }
     }
 
@@ -241,6 +249,7 @@ public class PolyLoadingView extends View {
         this.depth = depth;
 
         mAlpha = 255 / depth;
+        discardCache();
     }
 
     public void configSpring(int tension, int friction) {
@@ -262,4 +271,44 @@ public class PolyLoadingView extends View {
             changeMapRange();
         }
     }
+
+
+    public List<PointF> getRegularPoints(int cx,int cy,int slide , float radius) {
+        List<PointF> pts = new ArrayList<>();
+        for (int i = 0;i < slide;i++) {
+            float x = (float) (radius * Math.sin(i * 2 * Math.PI / slide));
+            float y = (float) (radius * Math.cos(i * 2 * Math.PI / slide));
+            x += cx;
+            y += cy;
+            pts.add(new PointF(x,y));
+        }
+        return pts;
+    }
+
+    public List<PointF> getInscribedPoints(List<PointF> pts, float progress) {
+        List<PointF> inscribedPoints = new ArrayList<>();
+
+        for (int i=0;i<pts.size();i++){
+            PointF start = pts.get(i);
+            PointF end;
+            if (i < pts.size()-1) end = pts.get(i+1);
+            else end = pts.get(0);
+
+            inscribedPoints.add(getInterpolatedPoint(start,end,progress));
+        }
+        return inscribedPoints;
+    }
+
+
+
+    private PointF getInterpolatedPoint(PointF start, PointF end, float progress) {
+        float dx = end.x - start.x;
+        float dy = end.y - start.y;
+
+        float newX = start.x + dx * progress;
+        float newY = start.y + dy * progress;
+
+        return new PointF(newX,newY);
+    }
+
 }

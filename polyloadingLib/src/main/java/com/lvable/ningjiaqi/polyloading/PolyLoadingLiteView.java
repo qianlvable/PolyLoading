@@ -1,10 +1,8 @@
 package com.lvable.ningjiaqi.polyloading;
 
-import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.CornerPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -14,15 +12,13 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 
-import com.facebook.rebound.Spring;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by ningjiaqi on 16/4/21.
  */
-public class TriangleView extends View {
+public class PolyLoadingLiteView extends View {
     private Paint mPaint;
     private int slide = 3;
     private int depth = 3;
@@ -40,17 +36,17 @@ public class TriangleView extends View {
 
     private int mAlpha;
 
-    public TriangleView(Context context) {
+    public PolyLoadingLiteView(Context context) {
         super(context);
         init();
     }
 
-    public TriangleView(Context context, AttributeSet attrs) {
+    public PolyLoadingLiteView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public TriangleView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public PolyLoadingLiteView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
@@ -92,7 +88,7 @@ public class TriangleView extends View {
             cy = getHeight() / 2;
             canvas.rotate(180, cx, cy);
             float radius = getWidth() / 2.8f;
-            mPoints = ShapeUtil.getRegularPoints(cx, cy, slide, radius);
+            mPoints = getRegularPoints(cx, cy, slide, radius);
         }
 
         List<List<PointF>> children = getCurrentShape(mProgress);
@@ -189,7 +185,7 @@ public class TriangleView extends View {
         return inscribedPoints;
     }
 
-    private static PointF getInterpolatedPoint(PointF start, PointF end, float progress) {
+    private PointF getInterpolatedPoint(PointF start, PointF end, float progress) {
         float dx = end.x - start.x;
         float dy = end.y - start.y;
 
@@ -222,10 +218,12 @@ public class TriangleView extends View {
             else
                 pre = mChildren.get(i-1);
 
-            List<PointF> child = ShapeUtil.getInscribedPoints(pre,progress);
+            List<PointF> child = getInscribedPoints(pre,progress);
             mChildren.add(child);
         }
         return mChildren;
     }
+
+
 
 }

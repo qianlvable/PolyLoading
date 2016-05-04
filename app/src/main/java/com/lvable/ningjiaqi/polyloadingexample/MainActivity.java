@@ -1,8 +1,10 @@
-package com.lvable.ningjiaqi.polyloading;
+package com.lvable.ningjiaqi.polyloadingexample;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+
+import com.lvable.ningjiaqi.polyloading.PolyLoadingView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -13,30 +15,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         final PolyLoadingView loadView1 = (PolyLoadingView) findViewById(R.id.test1);
         loadView1.setResizePercent(0.5f);
+        loadView1.setSlide(3);
+        loadView1.setFill(true);
+        loadView1.enableAlphaEffect(true);
+        loadView1.setDepth(3);
+        loadView1.setResizePercent(0.5f);
 
         final PolyLoadingView loadView2 = (PolyLoadingView) findViewById(R.id.test2);
         loadView2.setSlide(5);
+        loadView2.setFill(true);
+        loadView2.enableAlphaEffect(true);
         loadView2.setShapeColor(0xff554433);
-        loadView2.configSpring(100,20);
+        loadView2.configSpring(45,12);
         loadView2.setRoundCorner(5);
 
         final PolyLoadingView loadView3 = (PolyLoadingView) findViewById(R.id.test3);
-        loadView3.setSlide(5);
+        loadView3.setSlide(4);
         loadView3.enableAlphaEffect(false);
         loadView3.setFill(false);
-        loadView3.setDepth(6);
-        loadView3.setRoundCorner(15);
+        loadView3.setDepth(2);
+        loadView3.setRoundCorner(12);
         loadView3.setShapeColor(0xff354433);
-        loadView3.configSpring(6,3);
+        loadView3.configSpring(9,5);
 
 
         final PolyLoadingView loadView4 = (PolyLoadingView) findViewById(R.id.test4);
-        loadView4.setSlide(8);
+        loadView4.setSlide(6);
         loadView4.enableAlphaEffect(false);
         loadView4.setFill(false);
         loadView4.setDepth(3);
         loadView4.setShapeColor(0xff394cc6);
-        loadView4.configSpring(11,3);
+        loadView4.configSpring(25,6);
 
 
         loadView1.setOnClickListener(this);
