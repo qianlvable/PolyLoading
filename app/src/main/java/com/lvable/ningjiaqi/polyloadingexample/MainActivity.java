@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         loadView2.setShapeColor(0xff554433);
         loadView2.configSpring(45,12);
         loadView2.setRoundCorner(5);
+        loadView2.startLoading();
 
         final PolyLoadingView loadView3 = (PolyLoadingView) findViewById(R.id.test3);
         loadView3.setEdgeCount(4);
@@ -37,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         loadView3.setRoundCorner(12);
         loadView3.setShapeColor(0xff354433);
         loadView3.configSpring(9,5);
+       // loadView3.startLoading();
 
 
         final PolyLoadingView loadView4 = (PolyLoadingView) findViewById(R.id.test4);

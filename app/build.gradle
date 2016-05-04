@@ -26,3 +26,39 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.3.0'
     compile project(':polyloadingLib')
 }
+
+
+def siteUrl = 'https://github.com/qianlvable/PolyLoading'      // 项目的主页
+def gitUrl = 'https://github.com/qianlvable/PolyLoading.git'   // Git仓库的url
+group = "com.lvable.ningjiaqi.polyloading"
+version = '1.1.2'
+Properties properties = new Properties()
+
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+
+    user = properties.getProperty("bintray.user")
+
+    key = properties.getProperty("bintray.apikey")
+
+    configurations = ['archives']
+
+
+    pkg {
+
+        repo = "maven"
+
+        name = "polyLoading-animation"    //发布到JCenter上的项目名字
+
+        websiteUrl = 'https://github.com/qianlvable/PolyLoading'
+
+        vcsUrl = gitUrl
+
+        licenses = ["Apache-2.0"]
+
+        publish = true
+
+    }
+
+}

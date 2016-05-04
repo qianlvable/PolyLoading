@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import com.facebook.rebound.SimpleSpringListener;
@@ -50,6 +51,7 @@ public class PolyLoadingView extends View {
     private List<List<List<PointF>>> mFrameBuffer;
     private int mFrameIndex = 0;
     private List<PointF> mPoints;
+    private float startRecordTime = -1;
 
 
     public PolyLoadingView(Context context) {
@@ -109,6 +111,9 @@ public class PolyLoadingView extends View {
                     mSpring.setCurrentValue(0f);
                     mSpring.setEndValue(1);
                     curVal = (float) spring.getCurrentValue();
+
+                }
+                if (curVal == startRecordTime){
                     mFrameIndex = 0;
                     mBufferCompleted = true;
                 }
@@ -140,12 +145,12 @@ public class PolyLoadingView extends View {
             float radius = getWidth() / 2.8f;
             mPoints = getRegularPoints(mCx, mCy, mEdgeCount, radius);
         }
-
         List<List<PointF>> children;
         if (mBufferCompleted) {
             children = mFrameBuffer.get(mFrameIndex%mFrameBuffer.size());
             mFrameIndex++;
         }else {
+            startRecordTime = mProgress;
             children = getCurrentShape(mProgress);
             mFrameBuffer.add(children);
         }
