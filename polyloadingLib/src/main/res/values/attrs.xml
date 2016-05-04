@@ -6,7 +6,7 @@
         <attr name="enableAlpha" format="boolean"/>
         <attr name="filled" format="boolean"/>
         <attr name="depth" format="integer"/>
-        <attr name="tensition" format="integer"/>
+        <attr name="tension" format="integer"/>
         <attr name="friction" format="integer"/>
     </declare-styleable>
 </resources>

@@ -32,7 +32,7 @@ public class PolyLoadingView extends View {
     private float mResetAt = 1f;
     private float mToLow = 0;
     private float mToHigh = mResetAt;
-    private int mTensition = 20;
+    private int mTension = 20;
     private int mFriction = 6;
 
     private Paint mPaint;
@@ -69,7 +69,7 @@ public class PolyLoadingView extends View {
             mFilled = a.getBoolean(R.styleable.PolyLoadingView_filled,false);
             mEnableAlpha = a.getBoolean(R.styleable.PolyLoadingView_enableAlpha,false);
             mShapeColor = a.getColor(R.styleable.PolyLoadingView_shapeColor,0xff02C39A);
-            mTensition = a.getInt(R.styleable.PolyLoadingView_tensition,20);
+            mTension = a.getInt(R.styleable.PolyLoadingView_tension,20);
             mFriction = a.getInt(R.styleable.PolyLoadingView_friction,6);
         } finally {
             a.recycle();
@@ -95,7 +95,7 @@ public class PolyLoadingView extends View {
 
         SpringSystem springSystem = SpringSystem.create();
         mSpring = springSystem.createSpring();
-        mSpring.setSpringConfig(new SpringConfig(mTensition, mFriction));
+        mSpring.setSpringConfig(new SpringConfig(mTension, mFriction));
         mAlpha = 255 / mDepth;
         mUpdateListener = new SimpleSpringListener(){
             @Override
