@@ -16,23 +16,12 @@ PolyLoadingView.java need Facebook Rebound library as dependency,and with some c
 PolyLoadingLiteView.java does not require Rebound! But do not have cache feature.
 
 ##Quick start
-add maven url to your *project`s gradle* file:
-```gradle
-allprojects {
-    repositories {
-        jcenter()
-        maven {
-            url 'https://dl.bintray.com/qianlvable/maven/'
-        }
-    }
-}
-```
 add dependency in your * app gradle file *:
 ```gradle
 
 dependencies {
     ....
-    compile 'com.lvable.ningjiaqi.polyloading:polyloadingLib:1.1.3@aar'
+    compile 'com.lvable.ningjiaqi.polyloading:polyloadingLib:1.1.3'
 }
 
 ```
