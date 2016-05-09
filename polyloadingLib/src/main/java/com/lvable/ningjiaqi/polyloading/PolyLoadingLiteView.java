@@ -250,6 +250,9 @@ public class PolyLoadingLiteView extends View {
         return mChildren;
     }
 
-
-
+    @Override
+    protected void onDetachedFromWindow() {
+        mProgressAnimator.removeAllListeners();
+        super.onDetachedFromWindow();
+    }
 }
