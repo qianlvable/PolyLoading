@@ -21,7 +21,7 @@ add dependency in your * app gradle file *:
 
 dependencies {
     ....
-    compile 'com.lvable.ningjiaqi.polyloading:polyloadingLib:1.1.3'
+    compile 'com.lvable.ningjiaqi.polyloading:polyloadingLib:1.2'
 }
 
 ```
@@ -59,9 +59,6 @@ loadingView.startLoading();
 
 `depth` specifies the count of inscribed polygon inside. *Default: 4*
 
-`tension` specifies the tensiton of the spring animation. (See more on http://facebook.github.io/rebound/) *Default: 20*
-
-`friction` specifies the friction of the spring animation . (See more on http://facebook.github.io/rebound/ )*Default: 6*
 
 ## Copyright Notice ##
 ``` 
