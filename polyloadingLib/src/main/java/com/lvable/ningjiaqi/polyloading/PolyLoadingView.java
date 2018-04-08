@@ -1,5 +1,6 @@
 package com.lvable.ningjiaqi.polyloading;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -8,14 +9,8 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
-
-import com.facebook.rebound.SimpleSpringListener;
-import com.facebook.rebound.Spring;
-import com.facebook.rebound.SpringConfig;
-import com.facebook.rebound.SpringSystem;
-import com.facebook.rebound.SpringUtil;
+import android.view.animation.AccelerateDecelerateInterpolator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,8 +39,8 @@ public class PolyLoadingView extends View {
     private boolean mFilled;
     private int mStrokeWidth = 5;
 
-    private Spring mSpring;
-    private SimpleSpringListener mUpdateListener;
+    private ValueAnimator mAnimator;
+    private ValueAnimator.AnimatorUpdateListener mUpdateListener;
 
     private boolean mBufferCompleted;
     private List<List<List<PointF>>> mFrameBuffer;
@@ -95,31 +90,19 @@ public class PolyLoadingView extends View {
         mPoints = new ArrayList<>();
         mFrameBuffer = new ArrayList<>();
 
-        SpringSystem springSystem = SpringSystem.create();
-        mSpring = springSystem.createSpring();
-        mSpring.setSpringConfig(new SpringConfig(mTension, mFriction));
+        mAnimator = ValueAnimator.ofFloat(0, 1);
+        mAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        mAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+        mAnimator.setDuration(1200);
         mAlpha = 255 / mDepth;
-        mUpdateListener = new SimpleSpringListener(){
+
+        mUpdateListener = new ValueAnimator.AnimatorUpdateListener() {
+
             @Override
-            public void onSpringUpdate(Spring spring) {
-                float curVal = (float) spring.getCurrentValue();
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float curVal = (float) animation.getAnimatedValue();
 
-                if (curVal == mSpring.getEndValue()) {
-                    if (mResetAt != 1) {
-                        changeMapRange();
-                    }
-                    mSpring.setCurrentValue(0f);
-                    mSpring.setEndValue(1);
-                    curVal = (float) spring.getCurrentValue();
-
-                }
-                if (curVal == startRecordTime){
-                    mFrameIndex = 0;
-                    mBufferCompleted = true;
-                }
-
-                mProgress = (float) SpringUtil.mapValueFromRangeToRange(curVal
-                        ,1,0, mToLow, mToHigh);
+                mProgress = curVal;
                 invalidate();
             }
         };
@@ -209,17 +192,16 @@ public class PolyLoadingView extends View {
     }
 
     public void startLoading(){
-        mSpring.setEndValue(1);
-        mSpring.addListener(mUpdateListener);
+        mAnimator.addUpdateListener(mUpdateListener);
+        mAnimator.start();
     }
 
     public boolean isRunning(){
-        return mSpring.getEndValue() == 1;
+        return mAnimator.isRunning();
     }
 
     public void stop(){
-        mSpring.setEndValue(0);
-        mSpring.removeAllListeners();
+        mAnimator.removeAllUpdateListeners();
     }
 
     /**
@@ -270,13 +252,13 @@ public class PolyLoadingView extends View {
     }
 
     public void configSpring(int tension, int friction) {
-        mSpring.setSpringConfig(new SpringConfig(tension,friction));
+//        mSpring.setSpringConfig(new SpringConfig(tension,friction));
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        mSpring.removeAllListeners();
+        mAnimator.removeAllListeners();
     }
 
     /**
